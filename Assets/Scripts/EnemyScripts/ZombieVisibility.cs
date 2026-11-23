@@ -10,10 +10,10 @@ public class ZombieVisibility : MonoBehaviour
     [SerializeField] private float fadeDuration = 0.5f;
     [SerializeField] private LayerMask wallLayer; // Assign in Inspector: "Wall" layer only
 
-    void Start()
+    void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        spriteRenderer.color = new Color(1f, 1f, 1f, 0f);
+        SetAlpha(0f);
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -75,9 +75,18 @@ public class ZombieVisibility : MonoBehaviour
         {
             elapsedTime += Time.deltaTime;
             float newAlpha = Mathf.Lerp(startAlpha, targetAlpha, elapsedTime / duration);
-            spriteRenderer.color = new Color(1f, 1f, 1f, newAlpha);
+            SetAlpha(newAlpha);
             yield return null;
         }
-        spriteRenderer.color = new Color(1f, 1f, 1f, targetAlpha);
+        SetAlpha(targetAlpha);
+        fadeCoroutine = null;
+    }
+
+    // Changes alpha only, so a hit tint from ZombieHealth is kept.
+    private void SetAlpha(float alpha)
+    {
+        Color c = spriteRenderer.color;
+        c.a = alpha;
+        spriteRenderer.color = c;
     }
 }

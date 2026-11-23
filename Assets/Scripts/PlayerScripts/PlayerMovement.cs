@@ -1,41 +1,52 @@
 using UnityEngine;
-using static WeaponManager;
 
+// Moves and aims the player through its Rigidbody2D so walls stop it.
+[RequireComponent(typeof(Rigidbody2D))]
 public class PlayerMovement : MonoBehaviour
 {
-    public float moveSpeed = 5f; // Speed of the player
+    public float moveSpeed = 5f;
 
+    private Rigidbody2D rb;
+    private PlayerHealth health;
     private Vector2 movement;
+    private float aimAngle;
+
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        rb.interpolation = RigidbodyInterpolation2D.Interpolate;
+        health = GetComponent<PlayerHealth>();
+    }
+
+    void OnEnable()
+    {
+        if (health != null) health.OnDied += HandleDeath;
+    }
+
+    void OnDisable()
+    {
+        if (health != null) health.OnDied -= HandleDeath;
+    }
 
     void Update()
     {
-        // Input handling (WASD or Arrow Keys)
-        movement.x = Input.GetAxisRaw("Horizontal"); // Left/Right movement
-        movement.y = Input.GetAxisRaw("Vertical"); // Up/Down movement
+        movement = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized;
 
-        // Normalize the movement vector to prevent faster diagonal movement
-        movement = movement.normalized;
-
-        // Rotate player toward mouse
-        RotateTowardMouse();
+        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 direction = mousePos - rb.position;
+        aimAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
     }
 
     void FixedUpdate()
     {
-        // Movement logic (using transform)
-        transform.Translate(movement * moveSpeed * Time.fixedDeltaTime, Space.World);
+        rb.linearVelocity = movement * moveSpeed;
+        rb.MoveRotation(aimAngle);
     }
 
-    void RotateTowardMouse()
+    private void HandleDeath()
     {
-        // Get the mouse position in world coordinates
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mousePos.z = 0; // Ensure the z-coordinate is 0 (2D space)
-
-        // Calculate the direction from the player to the mouse
-        Vector2 direction = new Vector2(mousePos.x - transform.position.x, mousePos.y - transform.position.y);
-
-        // Rotate the player to face the mouse
-        transform.right = direction; // Point the player's "right" direction toward the mouse
+        movement = Vector2.zero;
+        rb.linearVelocity = Vector2.zero;
+        enabled = false;
     }
 }

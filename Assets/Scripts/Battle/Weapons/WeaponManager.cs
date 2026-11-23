@@ -8,6 +8,7 @@ public class WeaponManager : MonoBehaviour
 
     private readonly List<Weapon> equippedWeapons = new List<Weapon>();
     private SpriteRenderer playerSprite;
+    private PlayerHealth health;
 
     public IReadOnlyList<Weapon> EquippedWeapons => equippedWeapons;
     public Weapon CurrentWeapon { get; private set; }
@@ -28,6 +29,20 @@ public class WeaponManager : MonoBehaviour
 
         if (equippedWeapons.Count == 0)
             Debug.LogWarning("No weapons found. Put weapon prefabs in Assets/Resources/Weapons.", this);
+
+        health = GetComponent<PlayerHealth>();
+        if (health != null) health.OnDied += HandleDeath;
+    }
+
+    void OnDestroy()
+    {
+        if (health != null) health.OnDied -= HandleDeath;
+    }
+
+    // A dead player can't switch, shoot or reload.
+    private void HandleDeath()
+    {
+        enabled = false;
     }
 
     void Start()

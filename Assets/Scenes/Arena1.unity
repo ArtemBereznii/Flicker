@@ -308991,9 +308991,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 1496046151}
-  followStrength: 1000
+  followStrength: 50
   mouseInfluence: 1
-  maxMouseDistance: 3
+  maxMouseDistance: 5
 --- !u!1 &599850003
 GameObject:
   m_ObjectHideFlags: 0
@@ -311925,6 +311925,7 @@ MonoBehaviour:
   maxHealth: 100
   invincibilityTime: 0.1
   hurtSound: {fileID: 0}
+  flashDuration: 0.1
 --- !u!114 &1496046155
 MonoBehaviour:
   m_ObjectHideFlags: 0

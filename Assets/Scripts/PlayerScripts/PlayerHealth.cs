@@ -1,59 +1,62 @@
+using System;
+using System.Collections;
 using UnityEngine;
 
+// Owns the player's health and announces changes and death.
 public class PlayerHealth : MonoBehaviour
 {
     [Header("Settings")]
     [SerializeField] private int maxHealth = 100;
     [SerializeField] private float invincibilityTime = 1f;
     [SerializeField] private AudioClip hurtSound;
+    [SerializeField] private float flashDuration = 0.1f;
 
-    [Header("References")]
     private AudioSource audioSource;
+    private SpriteRenderer spriteRenderer;
     private bool isInvincible;
     private int currentHealth;
 
-    // Properties and event for the HealthBar
     public int CurrentHealth => currentHealth;
     public int MaxHealth => maxHealth;
-    public event System.Action OnHealthChanged;
+    public bool IsDead { get; private set; }
 
-    void Start()
+    public event Action OnHealthChanged;
+    public event Action OnDied;
+
+    void Awake()
     {
         currentHealth = maxHealth;
         audioSource = GetComponent<AudioSource>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     public void TakeDamage(int damage)
     {
-        if (isInvincible) return;
+        if (IsDead || isInvincible) return;
 
-        currentHealth -= damage;
+        currentHealth = Mathf.Max(currentHealth - damage, 0);
         OnHealthChanged?.Invoke();
-        audioSource.PlayOneShot(hurtSound);
 
-        // Visual feedback
+        if (audioSource != null && hurtSound != null)
+            audioSource.PlayOneShot(hurtSound);
+
         StartCoroutine(DamageFlash());
 
-        if (currentHealth <= 0)
-        {
+        if (currentHealth == 0)
             Die();
-        }
         else
-        {
             StartCoroutine(InvincibilityFrame());
-        }
     }
 
-    private System.Collections.IEnumerator DamageFlash()
+    private IEnumerator DamageFlash()
     {
-        SpriteRenderer sprite = GetComponent<SpriteRenderer>();
-        Color original = sprite.color;
-        sprite.color = Color.red;
-        yield return new WaitForSeconds(0.1f);
-        sprite.color = original;
+        Color original = spriteRenderer.color;
+        spriteRenderer.color = Color.red;
+        yield return new WaitForSeconds(flashDuration);
+        spriteRenderer.color = original;
     }
 
-    private System.Collections.IEnumerator InvincibilityFrame()
+    private IEnumerator InvincibilityFrame()
     {
         isInvincible = true;
         yield return new WaitForSeconds(invincibilityTime);
@@ -62,7 +65,7 @@ public class PlayerHealth : MonoBehaviour
 
     private void Die()
     {
-        Debug.Log("Player Died!");
-        // Add death animation/restart logic here
+        IsDead = true;
+        OnDied?.Invoke();
     }
 }

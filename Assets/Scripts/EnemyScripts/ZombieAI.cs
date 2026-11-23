@@ -1,52 +1,75 @@
 using UnityEngine;
 using UnityEngine.AI;
 
+// The NavMeshAgent only plans the path; the Rigidbody2D does the moving, so walls,
+// the player and other zombies collide through physics.
+[RequireComponent(typeof(NavMeshAgent), typeof(Rigidbody2D), typeof(ZombieAttack))]
 public class ZombieAI : MonoBehaviour
 {
     public float moveSpeed = 2f;
-    public float rotationSpeed = 10f; // How quickly zombie rotates toward player
+    public float rotationSpeed = 10f;
+    [Tooltip("Within this distance and in line of sight, the zombie turns to face the player instead of its path.")]
+    [SerializeField] private float faceTargetRange = 3f;
+    [SerializeField] private float repathInterval = 0.2f;
+    [Tooltip("Stop this fraction of the attack range away from the player.")]
+    [SerializeField, Range(0.1f, 1f)] private float stopAtAttackRangeFraction = 0.8f;
 
-    private Transform player;
     private NavMeshAgent agent;
     private Rigidbody2D rb;
+    private ZombieAttack attack;
+    private float nextRepathTime;
 
-    void Start()
+    void Awake()
     {
-        player = GameObject.FindGameObjectWithTag("Player").transform;
         agent = GetComponent<NavMeshAgent>();
         rb = GetComponent<Rigidbody2D>();
+        attack = GetComponent<ZombieAttack>();
 
-        // Configure NavMesh for 2D
+        agent.updatePosition = false;
         agent.updateRotation = false;
         agent.updateUpAxis = false;
         agent.speed = moveSpeed;
+        agent.stoppingDistance = attack.AttackRange * stopAtAttackRangeFraction;
     }
 
     void Update()
     {
-        if (player == null) return;
+        if (!attack.TargetAlive)
+        {
+            if (agent.isOnNavMesh) agent.isStopped = true;
+            return;
+        }
 
-        // Pathfinding (handled by NavMeshAgent)
-        agent.SetDestination(player.position);
-
-        // Manual rotation toward player
-        Vector2 direction = (player.position - transform.position).normalized;
-        float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-
-        // Smooth rotation
-        Quaternion rotation = Quaternion.Euler(0, 0, targetAngle);
-        transform.rotation = Quaternion.Slerp(
-            transform.rotation,
-            rotation,
-            rotationSpeed * Time.deltaTime
-        );
+        if (Time.time >= nextRepathTime && agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+            agent.SetDestination(attack.Target.position);
+            nextRepathTime = Time.time + repathInterval;
+        }
     }
 
-    void OnCollisionEnter2D(Collision2D collision)
+    void FixedUpdate()
     {
-        //if (collision.gameObject.CompareTag("Player"))
-        //{
-        //    collision.gameObject.GetComponent<PlayerHealth>().TakeDamage(10);
-        //}
+        // Stop once the player is in reach, instead of shoving into them.
+        bool inReach = attack.TargetAlive && attack.IsTargetInReach() && attack.CanSeePlayer();
+        Vector2 velocity = attack.TargetAlive && !inReach && agent.isOnNavMesh ? (Vector2)agent.desiredVelocity : Vector2.zero;
+        rb.linearVelocity = velocity;
+
+        // Keep the agent's simulated position on the body, which physics may have pushed.
+        agent.nextPosition = new Vector3(rb.position.x, rb.position.y, transform.position.z);
+
+        Vector2 lookDirection = velocity;
+        if (attack.TargetAlive)
+        {
+            Vector2 toTarget = (Vector2)attack.Target.position - rb.position;
+            if (toTarget.magnitude <= faceTargetRange && attack.CanSeePlayer())
+                lookDirection = toTarget;
+        }
+
+        if (lookDirection.sqrMagnitude > 0.0001f)
+        {
+            float targetAngle = Mathf.Atan2(lookDirection.y, lookDirection.x) * Mathf.Rad2Deg;
+            rb.MoveRotation(Mathf.LerpAngle(rb.rotation, targetAngle, rotationSpeed * Time.fixedDeltaTime));
+        }
     }
 }

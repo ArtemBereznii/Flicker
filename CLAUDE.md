@@ -29,20 +29,35 @@ No CLI build scripts exist. Work happens in the Unity Editor. The project has th
 **Loadout flow:** In MainMenu, `WeaponSelectionManager` spawns one `WeaponButton` (`Prefabs/UI/Weapon Button.prefab`) per catalog weapon under a `HorizontalLayoutGroup`. On confirm it calls `WeaponSelectionData.SetSelection` (prefab references, `LoadoutSize` = 2). In Arena1, `WeaponManager.Awake` instantiates the selected prefabs as inactive children of the player. If nothing was selected, for example when Arena1 is played directly, it uses the first two catalog weapons. `AmmoUI.Start` builds one bar per `WeaponManager.EquippedWeapons` entry from its `ammoBarPrefab`. It relies on `WeaponManager` having spawned the weapons in `Awake`.
 
 **Projectiles (`Scripts/Battle/Projectile`, `Rpg/RocketProjectile`)**: Projectiles are trigger-based (`OnTriggerEnter2D`) and filter by `LayerMask`s for the Zombie and Wall layers. The firing weapon sets their damage and lifetime, not the projectile prefab.
+- `SpawnProjectile(rotation, autoDestroy: false)` leaves the lifetime to the projectile.
+- `RPG` uses this: `RocketProjectile` explodes once, on a zombie or wall hit or when its lifetime ends (`Invoke`). All of its damage comes from the explosion. Falloff is measured to each collider's closest point, so a direct hit deals full damage.
+- The effect is `Prefabs/Other/Explosion.prefab`, an unlit particle burst so it shows in darkness.
 
 Because there are no asmdefs, `Assembly-CSharp` ships in player builds. Never add `using UnityEditor...` to scripts under `Assets/Scripts/`.
 
-**Enemies (`Scripts/EnemyScripts`)**: Each zombie is made of independent components:
-- `ZombieAI` uses a `NavMeshAgent` and sets `updateRotation`/`updateUpAxis = false` for 2D.
-- `ZombieAttack` is range-based and doesn't use collisions.
+**Enemies (`Scripts/EnemyScripts`)**: Each zombie is made of independent components. Each concern has exactly one owner:
+- `ZombieAI` moves the zombie. The `NavMeshAgent` only plans: `updatePosition`, `updateRotation` and `updateUpAxis` are all false. The zombie's dynamic `Rigidbody2D` moves at `agent.desiredVelocity` in `FixedUpdate`, and `agent.nextPosition` is synced back from the body. Walls, the player and other zombies therefore collide through physics.
+  - It repaths every 0.2 s.
+  - It stops once the player is in reach.
+  - It faces its movement direction, and turns toward the player only when close and in line of sight.
+  - Its speed comes from `ZombieAI.moveSpeed`, which overrides the agent's value.
+- `ZombieAttack` handles attacks. The player is in reach when the centers are within `attackRange` or the colliders touch (`contactTolerance`). Physics keeps bodies apart, so center distance alone could never reach short ranges. Attacks also require a clear `Linecast` against the Wall layer (`CanSeePlayer`).
 - `ZombieHealth` is the damage receiver.
-- `ZombieVisibility` keeps the zombie invisible (alpha 0) until it is inside a trigger tagged `Flashlight` with no `wallLayer` raycast blocking it. This is the core "flicker" mechanic.
+  - It owns the hit tint, changing RGB only.
+  - It guards against dying twice with `IsDead`.
+- `ZombieVisibility` owns alpha and changes nothing else. It keeps the zombie invisible (alpha 0) until it is inside a trigger tagged `Flashlight` with no `wallLayer` raycast blocking it. This is the core "flicker" mechanic.
+
+Never write a zombie's full `SpriteRenderer.color` from two scripts. Change only the channel the script owns.
 
 The 2D NavMesh comes from **NavMeshPlus** (`com.h8man.2d.navmeshplus`), a git package pinned to a commit in `Packages/manifest.json`. Older commits fail to compile on Unity 6000.6 (`GetInstanceID` is obsolete-as-error), so only move the pin forward. NavMesh assets are baked per scene, in `Scenes/Arena1/`.
 
-**Player / camera**: The player is found by tag `Player` (zombies, `AmmoUI`). `PlayerMovement` and `PlayerFlashlight` rotate toward the mouse. `CameraController` follows the player, pulled toward the mouse.
+**Player / camera**: The player is found by tag `Player` (zombies, `AmmoUI`). `CameraController` follows the player, pulled toward the mouse.
+- `PlayerMovement` moves and aims through the `Rigidbody2D`, using `linearVelocity` and `MoveRotation` in `FixedUpdate` with interpolation. Never move the player with `transform` directly.
+- `PlayerHealth` initializes in `Awake` and clamps health at 0. It raises `OnHealthChanged` and `OnDied`, and exposes `IsDead`.
+- On `OnDied`, `PlayerMovement`, `WeaponManager` and `PlayerFlashlight` disable themselves, and zombies stop: `ZombieAttack.TargetAlive` checks `IsDead`. There is no game-over screen or restart yet.
+- The flashlight in Arena1 is a 360° point `Light2D` plus a circle trigger. `PlayerFlashlight` exists but isn't attached to it.
 
-**UI (`Scripts/UI`)**: This is uGUI: `Slider`, legacy `Text`, and TMP in the selection screen. `HealthBar` polls `PlayerHealth` every frame, although `PlayerHealth.OnHealthChanged` exists.
+**UI (`Scripts/UI`)**: This is uGUI: `Slider`, legacy `Text`, and TMP in the selection screen. `HealthBar` updates only on `PlayerHealth.OnHealthChanged`.
 
 **Input:** Code uses the legacy `Input` class (`Input.GetAxis`, `GetKeyDown`, `"Fire1"`). Project settings use "Both" input handling, even though the Input System package is installed.
 
@@ -50,4 +65,10 @@ The 2D NavMesh comes from **NavMeshPlus** (`com.h8man.2d.navmeshplus`), a git pa
 
 ## Version control
 
-`.gitignore` excludes `Library/`, `Logs/`, `obj/`, `UserSettings/` and `.vs/`, but older commits tracked them, so they still show up in `git status`. Don't stage or commit them. Always commit `.meta` files together with their assets.
+Remote `origin` is the public GitHub repo `ArtemBereznii/Flicker`. Work goes on `master`, which tracks `origin/master`. The history was restarted from a single clean commit, so there is no older history to dig through.
+
+- `.gitignore` is the standard Unity template plus `.idea/` and `/docs/`. It excludes `Library/`, `Temp/`, `Logs/`, `obj/`, `UserSettings/`, `.vs/`, `*.csproj` and `*.sln`. None of these should ever appear in `git status`. If one does, something was force-added. Never use `git add -f`.
+- `.gitattributes` normalizes line endings and marks images, audio and fonts as binary. It routes `*.unity`, `*.prefab`, `*.asset`, `*.anim`, `*.controller` and `*.mat` through the `unityyamlmerge` driver (Unity's `UnityYAMLMerge.exe` from the Editor's `Data/Tools`). No Git LFS is used. Assets are small.
+- Assets are serialized as text and `.meta` files are visible. Always commit `.meta` files together with their assets.
+- The user handles commits and pushes. Don't commit unless asked.
+- Commit messages follow Conventional Commits with a capitalized area scope: `type(Scope): summary`, for example `fix(Enemy): ...`, `feat(Weapons): ...`, `refactor(Player): ...`, `docs(Claude): ...`. Types are `feat`, `fix`, `refactor`, `perf`, `docs`, `chore` and `test`. The body is a short bullet list of what changed. A change spanning several areas uses the broadest scope that fits, such as `Gameplay`.

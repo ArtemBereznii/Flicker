@@ -9,9 +9,11 @@ public class RPG : Weapon
 
     protected override void PerformShot()
     {
-        GameObject rocket = SpawnProjectile(firePoint.rotation);
+        GameObject rocket = SpawnProjectile(firePoint.rotation, autoDestroy: false);
 
         if (rocket.TryGetComponent(out RocketProjectile rocketProjectile))
-            rocketProjectile.Initialize(damagePerShot, explosionRadius, explosionEffect, damageLayers);
+            rocketProjectile.Initialize(damagePerShot, explosionRadius, explosionEffect, damageLayers, projectileLifetime);
+        else
+            Destroy(rocket, projectileLifetime);
     }
 }

@@ -60,7 +60,7 @@ MonoBehaviour:
   shootSound: {fileID: 0}
   reloadSound: {fileID: 0}
   explosionRadius: 3
-  explosionEffect: {fileID: 460627182985624306, guid: 869cd64297aed534b8cc3be8af78a3a7, type: 3}
+  explosionEffect: {fileID: 7847247694631185883, guid: f9fda05670cab0c45a7d0e6705d7bef7, type: 3}
   damageLayers:
     serializedVersion: 2
     m_Bits: 896
