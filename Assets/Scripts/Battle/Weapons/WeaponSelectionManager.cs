@@ -53,6 +53,6 @@ public class WeaponSelectionManager : MonoBehaviour
     private void ConfirmSelection()
     {
         WeaponSelectionData.SetSelection(selectedWeapons);
-        SceneManager.LoadScene("Arena1");
+        SceneManager.LoadScene(SceneNames.Arena1);
     }
 }

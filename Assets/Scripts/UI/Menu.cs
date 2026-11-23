@@ -25,7 +25,7 @@ public class Menu : MonoBehaviour
 
     public void StartGame()
     {
-        SceneManager.LoadScene("Arena1");
+        SceneManager.LoadScene(SceneNames.Arena1);
     }
 
     public void OpenWeapons()
@@ -48,7 +48,6 @@ public class Menu : MonoBehaviour
 
     public void QuitGame()
     {
-        Debug.Log("Quit Game");
         Application.Quit();
     }
 

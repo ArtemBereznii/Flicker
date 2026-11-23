@@ -9,6 +9,7 @@ public class WeaponManager : MonoBehaviour
     private readonly List<Weapon> equippedWeapons = new List<Weapon>();
     private SpriteRenderer playerSprite;
     private PlayerHealth health;
+    private PlayerInputReader input;
 
     public IReadOnlyList<Weapon> EquippedWeapons => equippedWeapons;
     public Weapon CurrentWeapon { get; private set; }
@@ -30,6 +31,7 @@ public class WeaponManager : MonoBehaviour
         if (equippedWeapons.Count == 0)
             Debug.LogWarning("No weapons found. Put weapon prefabs in Assets/Resources/Weapons.", this);
 
+        input = GetComponent<PlayerInputReader>();
         health = GetComponent<PlayerHealth>();
         if (health != null) health.OnDied += HandleDeath;
     }
@@ -45,6 +47,26 @@ public class WeaponManager : MonoBehaviour
         enabled = false;
     }
 
+    void OnEnable()
+    {
+        if (input == null) return;
+        input.SwitchWeapon += CycleWeapon;
+        input.Slot1Pressed += EquipSlot1;
+        input.Slot2Pressed += EquipSlot2;
+        input.UnequipPressed += UnequipWeapon;
+        input.ReloadPressed += Reload;
+    }
+
+    void OnDisable()
+    {
+        if (input == null) return;
+        input.SwitchWeapon -= CycleWeapon;
+        input.Slot1Pressed -= EquipSlot1;
+        input.Slot2Pressed -= EquipSlot2;
+        input.UnequipPressed -= UnequipWeapon;
+        input.ReloadPressed -= Reload;
+    }
+
     void Start()
     {
         EquipWeapon(0);
@@ -52,22 +74,24 @@ public class WeaponManager : MonoBehaviour
 
     void Update()
     {
-        HandleWeaponSwitching();
-        HandleShooting();
-        HandleReloading();
+        if (CurrentWeapon != null && input != null && input.FireHeld)
+            CurrentWeapon.Shoot();
     }
 
-    private void HandleWeaponSwitching()
+    private void CycleWeapon(int step)
     {
         if (equippedWeapons.Count == 0) return;
+        int count = equippedWeapons.Count;
+        EquipWeapon(((CurrentWeaponIndex + step) % count + count) % count);
+    }
 
-        float scroll = Input.GetAxis("Mouse ScrollWheel");
-        if (scroll > 0) EquipWeapon((CurrentWeaponIndex + 1) % equippedWeapons.Count);
-        if (scroll < 0) EquipWeapon((CurrentWeaponIndex - 1 + equippedWeapons.Count) % equippedWeapons.Count);
+    private void EquipSlot1() => EquipWeapon(0);
+    private void EquipSlot2() => EquipWeapon(1);
 
-        if (Input.GetKeyDown(KeyCode.Alpha1)) EquipWeapon(0);
-        if (Input.GetKeyDown(KeyCode.Alpha2)) EquipWeapon(1);
-        if (Input.GetKeyDown(KeyCode.X)) UnequipWeapon();
+    private void Reload()
+    {
+        if (CurrentWeapon != null)
+            CurrentWeapon.StartReload();
     }
 
     public void EquipWeapon(int slotIndex)
@@ -95,17 +119,5 @@ public class WeaponManager : MonoBehaviour
 
         if (unarmedSprite != null)
             playerSprite.sprite = unarmedSprite;
-    }
-
-    private void HandleShooting()
-    {
-        if (CurrentWeapon != null && Input.GetButton("Fire1"))
-            CurrentWeapon.Shoot();
-    }
-
-    private void HandleReloading()
-    {
-        if (CurrentWeapon != null && Input.GetKeyDown(KeyCode.R))
-            CurrentWeapon.StartReload();
     }
 }

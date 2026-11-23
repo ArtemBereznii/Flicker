@@ -14,6 +14,6 @@ public class RPG : Weapon
         if (rocket.TryGetComponent(out RocketProjectile rocketProjectile))
             rocketProjectile.Initialize(damagePerShot, explosionRadius, explosionEffect, damageLayers, projectileLifetime);
         else
-            Destroy(rocket, projectileLifetime);
+            rocket.GetComponent<PooledObject>().ReleaseAfter(projectileLifetime);
     }
 }

@@ -1,14 +1,19 @@
+using System.Collections;
 using UnityEngine;
 
+// Owns the zombie's alpha: invisible unless a VisibilityLight covers it with no wall in between.
 public class ZombieVisibility : MonoBehaviour
 {
-    private SpriteRenderer spriteRenderer;
-    private Coroutine fadeCoroutine;
-    private bool isVisible;
-
     [Header("Settings")]
     [SerializeField] private float fadeDuration = 0.5f;
     [SerializeField] private LayerMask wallLayer; // Assign in Inspector: "Wall" layer only
+    [Tooltip("Seconds between visibility checks.")]
+    [SerializeField] private float checkInterval = 0.05f;
+
+    private SpriteRenderer spriteRenderer;
+    private Coroutine fadeCoroutine;
+    private bool isVisible;
+    private float nextCheckTime;
 
     void Awake()
     {
@@ -16,47 +21,25 @@ public class ZombieVisibility : MonoBehaviour
         SetAlpha(0f);
     }
 
-    void OnTriggerEnter2D(Collider2D other)
+    void Update()
     {
-        if (other.CompareTag("Flashlight") && !isVisible)
-        {
-            CheckVisibility(other);
-        }
+        if (Time.time < nextCheckTime) return;
+        nextCheckTime = Time.time + checkInterval;
+
+        bool lit = IsLit();
+        if (lit != isVisible)
+            SetVisibility(lit);
     }
 
-    void OnTriggerStay2D(Collider2D other)
+    private bool IsLit()
     {
-        if (other.CompareTag("Flashlight") && !isVisible)
+        Vector2 position = transform.position;
+        foreach (VisibilityLight light in VisibilityLight.All)
         {
-            CheckVisibility(other);
+            if (light.Covers(position) && !Physics2D.Linecast(position, light.Position, wallLayer))
+                return true;
         }
-    }
-
-    void OnTriggerExit2D(Collider2D other)
-    {
-        if (other.CompareTag("Flashlight") && isVisible)
-        {
-            SetVisibility(false);
-        }
-    }
-
-    private void CheckVisibility(Collider2D flashlightCollider)
-    {
-        if (!WallBlockingLight(flashlightCollider))
-        {
-            SetVisibility(true);
-            Debug.DrawLine(transform.position, flashlightCollider.transform.position, Color.green, 1f);
-        }
-    }
-
-    private bool WallBlockingLight(Collider2D flashlightCollider)
-    {
-        Vector2 origin = transform.position;
-        Vector2 direction = (flashlightCollider.transform.position - transform.position).normalized;
-        float distance = Vector2.Distance(origin, flashlightCollider.transform.position);
-
-        RaycastHit2D hit = Physics2D.Raycast(origin, direction, distance, wallLayer);
-        return hit.collider != null;
+        return false;
     }
 
     private void SetVisibility(bool visible)
@@ -66,7 +49,7 @@ public class ZombieVisibility : MonoBehaviour
         isVisible = visible;
     }
 
-    private System.Collections.IEnumerator FadeTo(float targetAlpha, float duration)
+    private IEnumerator FadeTo(float targetAlpha, float duration)
     {
         float startAlpha = spriteRenderer.color.a;
         float elapsedTime = 0f;
@@ -74,8 +57,7 @@ public class ZombieVisibility : MonoBehaviour
         while (elapsedTime < duration)
         {
             elapsedTime += Time.deltaTime;
-            float newAlpha = Mathf.Lerp(startAlpha, targetAlpha, elapsedTime / duration);
-            SetAlpha(newAlpha);
+            SetAlpha(Mathf.Lerp(startAlpha, targetAlpha, elapsedTime / duration));
             yield return null;
         }
         SetAlpha(targetAlpha);

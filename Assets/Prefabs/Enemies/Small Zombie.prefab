@@ -41,6 +41,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7521976652817195067
 SpriteRenderer:
+  serializedVersion: 3
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -59,6 +60,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -80,9 +83,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -1411257237
   m_SortingLayer: 2
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_Sprite: {fileID: -2344877621069035802, guid: 09a7c57640f43db4e84891383e11b00f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -92,8 +97,8 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+  m_BlendShapeWeights: []
 --- !u!50 &8074052645972248728
 Rigidbody2D:
   serializedVersion: 5
@@ -203,6 +208,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 5
   rotationSpeed: 25
+  faceTargetRange: 3
+  repathInterval: 0.2
+  stopAtAttackRangeFraction: 0.8
 --- !u!114 &6638682098864619042
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -219,6 +227,7 @@ MonoBehaviour:
   wallLayer:
     serializedVersion: 2
     m_Bits: 8
+  checkInterval: 0.05
 --- !u!114 &27700511024463602
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -232,8 +241,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 5
-  attackRate: 0.23
+  attackRate: 0.6
   attackRange: 0.4
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  contactTolerance: 0.05
 --- !u!114 &7829686130265061724
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -248,5 +261,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 20
   flashDuration: 0.1
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
   bloodEffect: {fileID: 460627182985624306, guid: 869cd64297aed534b8cc3be8af78a3a7, type: 3}
   hurtSounds: []

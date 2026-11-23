@@ -91,10 +91,10 @@ public abstract class Weapon : MonoBehaviour
     // Fire this weapon's projectiles. Use SpawnProjectile for each one.
     protected abstract void PerformShot();
 
-    // autoDestroy = false leaves the projectile's lifetime to the projectile itself (e.g. rockets explode on expiry).
+    // Projectiles come from ObjectPools. autoDestroy = false leaves the lifetime to the projectile itself (e.g. rockets explode on expiry).
     protected GameObject SpawnProjectile(Quaternion rotation, bool autoDestroy = true)
     {
-        GameObject projectile = Instantiate(projectilePrefab, firePoint.position, rotation);
+        GameObject projectile = ObjectPools.Get(projectilePrefab, firePoint.position, rotation);
 
         if (projectile.TryGetComponent(out Rigidbody2D rb))
             rb.linearVelocity = rotation * Vector3.right * projectileSpeed;
@@ -103,7 +103,7 @@ public abstract class Weapon : MonoBehaviour
             bullet.damage = damagePerShot;
 
         if (autoDestroy)
-            Destroy(projectile, projectileLifetime);
+            projectile.GetComponent<PooledObject>().ReleaseAfter(projectileLifetime);
         return projectile;
     }
 

@@ -31,7 +31,7 @@ public class ZombieAttack : MonoBehaviour
 
     void Start()
     {
-        GameObject playerObject = GameObject.FindWithTag("Player");
+        GameObject playerObject = GameObject.FindWithTag(GameTags.Player);
         if (playerObject != null)
         {
             player = playerObject.transform;

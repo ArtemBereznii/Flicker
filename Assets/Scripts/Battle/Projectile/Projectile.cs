@@ -19,12 +19,12 @@ public class Projectile : MonoBehaviour
                 zombie.TakeDamage(damage);
                 SpawnImpactEffect(other.ClosestPoint(transform.position));
             }
-            Destroy(gameObject);
+            PooledObject.Despawn(gameObject);
         }
         else if ((wallLayer.value & otherLayer) != 0) // Wall hit
         {
             SpawnImpactEffect(other.ClosestPoint(transform.position));
-            Destroy(gameObject);
+            PooledObject.Despawn(gameObject);
         }
         // Ignore all other collisions
     }

@@ -16,7 +16,6 @@ public class AmmoUI : MonoBehaviour
     private class WeaponUI
     {
         public Slider ammoSlider;
-        public Text ammoText;
         public CanvasGroup canvasGroup;
         public RectTransform rectTransform;
     }
@@ -24,7 +23,7 @@ public class AmmoUI : MonoBehaviour
     void Start()
     {
         if (weaponManager == null)
-            weaponManager = GameObject.FindWithTag("Player").GetComponent<WeaponManager>();
+            weaponManager = GameObject.FindWithTag(GameTags.Player).GetComponent<WeaponManager>();
 
         foreach (Weapon weapon in weaponManager.EquippedWeapons)
             CreateWeaponUI(weapon);
@@ -62,7 +61,6 @@ public class AmmoUI : MonoBehaviour
         WeaponUI ui = new WeaponUI
         {
             ammoSlider = uiObj.GetComponentInChildren<Slider>(),
-            ammoText = uiObj.GetComponentInChildren<Text>(),
             canvasGroup = cg,
             rectTransform = uiObj.GetComponent<RectTransform>()
         };
@@ -77,9 +75,6 @@ public class AmmoUI : MonoBehaviour
         ui.ammoSlider.value = weapon.IsReloading
             ? Mathf.Lerp(weapon.CurrentAmmo, weapon.MaxAmmo, weapon.CurrentReloadProgress())
             : weapon.CurrentAmmo;
-
-        if (ui.ammoText != null)
-            ui.ammoText.text = $"{weapon.CurrentAmmo}/{weapon.MaxAmmo}";
     }
 
     private void AnimateUIState(WeaponUI ui, bool isActive)

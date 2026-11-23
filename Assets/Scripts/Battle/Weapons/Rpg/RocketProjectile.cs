@@ -13,6 +13,10 @@ public class RocketProjectile : MonoBehaviour
     private LayerMask damageLayers;
     private bool exploded;
 
+    // Rockets are pooled: reset per launch.
+    void OnEnable() => exploded = false;
+    void OnDisable() => CancelInvoke(nameof(Explode));
+
     public void Initialize(int dmg, float radius, GameObject effect, LayerMask layers, float lifetime)
     {
         damage = dmg;
@@ -50,7 +54,7 @@ public class RocketProjectile : MonoBehaviour
             zombie.TakeDamage(Mathf.RoundToInt(damage * falloff));
         }
 
-        Destroy(gameObject);
+        PooledObject.Despawn(gameObject);
     }
 
     void OnDrawGizmosSelected()

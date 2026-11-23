@@ -9,15 +9,17 @@ public class ProjectileDirection : MonoBehaviour
     private Rigidbody2D rb;
     private Vector2 lastVelocity;
 
-    void Start()
+    void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+    }
 
-        // Initial rotation based on starting velocity
+    // Projectiles are pooled, so reset on every reuse rather than once in Start.
+    void OnEnable()
+    {
+        lastVelocity = Vector2.zero;
         if (rb.linearVelocity != Vector2.zero)
-        {
             UpdateRotation(rb.linearVelocity);
-        }
     }
 
     void Update()
