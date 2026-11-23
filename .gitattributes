@@ -1,0 +1,22 @@
+# Normalize line endings for text files; Git converts to CRLF on Windows checkouts.
+* text=auto
+
+# Unity text-serialized assets: merge with Unity's Smart Merge (configure once per machine,
+# see README/CLAUDE.md), never auto-merge line by line.
+*.unity    merge=unityyamlmerge eol=lf
+*.prefab   merge=unityyamlmerge eol=lf
+*.asset    merge=unityyamlmerge eol=lf
+*.anim     merge=unityyamlmerge eol=lf
+*.controller merge=unityyamlmerge eol=lf
+*.mat      merge=unityyamlmerge eol=lf
+*.meta     eol=lf
+
+# Binary assets
+*.png  binary
+*.jpg  binary
+*.psd  binary
+*.wav  binary
+*.mp3  binary
+*.ogg  binary
+*.ttf  binary
+*.otf  binary

@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 3
+  tags:
+  - Zombie
+  - Flashlight
+  - Wall
+  - MenuButtons
+  - GameName
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - Wall
+  - Water
+  - UI
+  - Floor
+  - Player
+  - Bullet
+  - Zombie
+  - Muse Animate Handles
+  - Muse Animate Thumbnail
+  - Muse Animate Environment
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Floor
+    uniqueID: 802146767
+    locked: 0
+  - name: Player
+    uniqueID: 2883710059
+    locked: 0
+  - name: Wall
+    uniqueID: 217892951
+    locked: 0
+  m_RenderingLayers:
+  - Default
