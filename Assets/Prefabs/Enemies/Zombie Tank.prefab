@@ -160,7 +160,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.0059661865, y: -0.00029850006}
+  m_Offset: {x: 0, y: -0.00029850006}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -180,7 +180,7 @@ NavMeshAgent:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 168819245145046825}
   m_Enabled: 1
-  m_AgentTypeID: 0
+  m_AgentTypeID: 1279349319
   m_Radius: 0.51
   m_Speed: 2
   m_Acceleration: 8

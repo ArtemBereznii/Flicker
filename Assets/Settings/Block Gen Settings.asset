@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 816f20ca82230c04bbf2a81e034ef944, type: 3}
+  m_Name: Block Gen Settings
+  m_EditorClassIdentifier: Flicker.Generation::Flicker.Generation.BlockGenSettings
+  widthRange: {x: 52, y: 69}
+  heightRange: {x: 38, y: 47}
+  roadRows: 3
+  sidewalkDepth: 3
+  perimeterThickness: 2
+  carSpotWidth: 4
+  lotMinSize: 8
+  lotMaxSize: 16
+  alleyWidthRange: {x: 2, y: 4}
+  alleyChanceTop: 0.9
+  alleyChanceFalloff: 0.6
+  houseWeight: 0.55
+  tallWeight: 0.15
+  parkingWeight: 0.15
+  parkWeight: 0.15
+  minHouses: 3
+  tallMinSide: 10
+  parkingMinSide: 8
+  parkMinSide: 8
+  yardDepthRange: {x: 3, y: 6}
+  roomMinInner: 4
+  roomMaxInner: 9
+  extraDoorChance: 0.25
+  carChance: 0.6
+  parkTreesPer100: 6
+  parkBenchesPer100: 3
+  parkTrashPer100: 2
+  maxAttempts: 20

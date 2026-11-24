@@ -3,4 +3,5 @@ public static class SceneNames
 {
     public const string MainMenu = "MainMenu";
     public const string Arena1 = "Arena1";
+    public const string Block = "Block";
 }

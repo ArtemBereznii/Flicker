@@ -22,6 +22,7 @@ public class PlayerHealth : MonoBehaviour
 
     public event Action OnHealthChanged;
     public event Action OnDied;
+    public event Action OnRevived;
 
     void Awake()
     {
@@ -67,5 +68,16 @@ public class PlayerHealth : MonoBehaviour
     {
         IsDead = true;
         OnDied?.Invoke();
+    }
+
+    // Back to full health and control (used when a new block starts).
+    public void Revive()
+    {
+        bool wasDead = IsDead;
+        IsDead = false;
+        isInvincible = false;
+        currentHealth = maxHealth;
+        OnHealthChanged?.Invoke();
+        if (wasDead) OnRevived?.Invoke();
     }
 }

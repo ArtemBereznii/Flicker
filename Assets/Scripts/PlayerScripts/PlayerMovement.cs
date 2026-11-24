@@ -21,17 +21,22 @@ public class PlayerMovement : MonoBehaviour
         health = GetComponent<PlayerHealth>();
         input = GetComponent<PlayerInputReader>();
         aimAngle = rb.rotation;
+        // Subscribed for the whole lifetime: death disables this component, revival must still reach it.
+        if (health != null)
+        {
+            health.OnDied += HandleDeath;
+            health.OnRevived += HandleRevived;
+        }
     }
 
-    void OnEnable()
+    void OnDestroy()
     {
-        if (health != null) health.OnDied += HandleDeath;
+        if (health == null) return;
+        health.OnDied -= HandleDeath;
+        health.OnRevived -= HandleRevived;
     }
 
-    void OnDisable()
-    {
-        if (health != null) health.OnDied -= HandleDeath;
-    }
+    private void HandleRevived() => enabled = true;
 
     void Update()
     {

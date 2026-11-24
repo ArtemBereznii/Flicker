@@ -171,6 +171,16 @@ public partial class @FlickerControls: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""initialStateCheck"": false,
                     ""priority"": 0
+                },
+                {
+                    ""name"": ""Regenerate"",
+                    ""type"": ""Button"",
+                    ""id"": ""eaf836cb-c769-48b3-8d51-694f54a1ca33"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
                 }
             ],
             ""bindings"": [
@@ -360,6 +370,17 @@ public partial class @FlickerControls: IInputActionCollection2, IDisposable
                     ""action"": ""Unequip"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""75afb8de-5708-4155-9ade-73e631480c11"",
+                    ""path"": ""<Keyboard>/n"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Regenerate"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -393,6 +414,7 @@ public partial class @FlickerControls: IInputActionCollection2, IDisposable
         m_Gameplay_Slot1 = m_Gameplay.FindAction("Slot1", throwIfNotFound: true);
         m_Gameplay_Slot2 = m_Gameplay.FindAction("Slot2", throwIfNotFound: true);
         m_Gameplay_Unequip = m_Gameplay.FindAction("Unequip", throwIfNotFound: true);
+        m_Gameplay_Regenerate = m_Gameplay.FindAction("Regenerate", throwIfNotFound: true);
     }
 
     ~@FlickerControls()
@@ -481,6 +503,7 @@ public partial class @FlickerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Gameplay_Slot1;
     private readonly InputAction m_Gameplay_Slot2;
     private readonly InputAction m_Gameplay_Unequip;
+    private readonly InputAction m_Gameplay_Regenerate;
     /// <summary>
     /// Provides access to input actions defined in input action map "Gameplay".
     /// </summary>
@@ -524,6 +547,10 @@ public partial class @FlickerControls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Gameplay/Unequip".
         /// </summary>
         public InputAction @Unequip => m_Wrapper.m_Gameplay_Unequip;
+        /// <summary>
+        /// Provides access to the underlying input action "Gameplay/Regenerate".
+        /// </summary>
+        public InputAction @Regenerate => m_Wrapper.m_Gameplay_Regenerate;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -574,6 +601,9 @@ public partial class @FlickerControls: IInputActionCollection2, IDisposable
             @Unequip.started += instance.OnUnequip;
             @Unequip.performed += instance.OnUnequip;
             @Unequip.canceled += instance.OnUnequip;
+            @Regenerate.started += instance.OnRegenerate;
+            @Regenerate.performed += instance.OnRegenerate;
+            @Regenerate.canceled += instance.OnRegenerate;
         }
 
         /// <summary>
@@ -609,6 +639,9 @@ public partial class @FlickerControls: IInputActionCollection2, IDisposable
             @Unequip.started -= instance.OnUnequip;
             @Unequip.performed -= instance.OnUnequip;
             @Unequip.canceled -= instance.OnUnequip;
+            @Regenerate.started -= instance.OnRegenerate;
+            @Regenerate.performed -= instance.OnRegenerate;
+            @Regenerate.canceled -= instance.OnRegenerate;
         }
 
         /// <summary>
@@ -718,5 +751,12 @@ public partial class @FlickerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnUnequip(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Regenerate" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnRegenerate(InputAction.CallbackContext context);
     }
 }

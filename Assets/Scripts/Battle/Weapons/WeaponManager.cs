@@ -33,12 +33,18 @@ public class WeaponManager : MonoBehaviour
 
         input = GetComponent<PlayerInputReader>();
         health = GetComponent<PlayerHealth>();
-        if (health != null) health.OnDied += HandleDeath;
+        if (health != null)
+        {
+            health.OnDied += HandleDeath;
+            health.OnRevived += HandleRevived;
+        }
     }
 
     void OnDestroy()
     {
-        if (health != null) health.OnDied -= HandleDeath;
+        if (health == null) return;
+        health.OnDied -= HandleDeath;
+        health.OnRevived -= HandleRevived;
     }
 
     // A dead player can't switch, shoot or reload.
@@ -46,6 +52,8 @@ public class WeaponManager : MonoBehaviour
     {
         enabled = false;
     }
+
+    private void HandleRevived() => enabled = true;
 
     void OnEnable()
     {

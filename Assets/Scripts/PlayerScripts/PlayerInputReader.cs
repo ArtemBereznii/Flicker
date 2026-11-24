@@ -17,6 +17,8 @@ public class PlayerInputReader : MonoBehaviour
     public event Action Slot1Pressed;
     public event Action Slot2Pressed;
     public event Action UnequipPressed;
+    // Debug: generate a new block with a random seed.
+    public event Action RegeneratePressed;
     /// <summary>+1 for next weapon, -1 for previous.</summary>
     public event Action<int> SwitchWeapon;
 
@@ -28,6 +30,7 @@ public class PlayerInputReader : MonoBehaviour
         gameplay.Slot1.performed += _ => Slot1Pressed?.Invoke();
         gameplay.Slot2.performed += _ => Slot2Pressed?.Invoke();
         gameplay.Unequip.performed += _ => UnequipPressed?.Invoke();
+        gameplay.Regenerate.performed += _ => RegeneratePressed?.Invoke();
         gameplay.SwitchWeapon.performed += OnSwitchWeapon;
     }
 
