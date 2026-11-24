@@ -101,6 +101,7 @@ The 2D NavMesh comes from **NavMeshPlus** (`com.h8man.2d.navmeshplus`), a git pa
   - `Flashlight Cone`: 70° outer and 45° inner angle, radius 8, local rotation −90° because 2D lights point along local up and the player aims along +X.
   - `VisibilityLight` reads its reveal area from its own `Light2D` (outer radius and outer angle) and registers in `VisibilityLight.All`. Changing a light's size or angle in the Inspector changes what it reveals.
   - No trigger colliders or `Flashlight` tag are involved.
+  - Both lights use shadow intensity 1, so walls stop light completely. Below 1, part of the light shows through walls.
 
 **UI (`Scripts/UI`)**: This is uGUI: `Slider`s, and TMP in the selection screen. There is no legacy `Text`. `HealthBar` updates only on `PlayerHealth.OnHealthChanged`.
 
@@ -114,7 +115,7 @@ The 2D NavMesh comes from **NavMeshPlus** (`com.h8man.2d.navmeshplus`), a git pa
 - **Wall** blocks movement, light (`ZombieVisibility` linecasts, `ShadowCaster2D`) and bullets. Walls, fences, buildings, the street barrier, cars and trees are on it.
 - **Obstacle** (layer 13) only blocks movement and the NavMesh: benches and trash cans. You can see and shoot over it. It is in no `wallLayer` mask, has no shadow caster, and Bullet × Obstacle collisions are off in the 2D physics matrix.
 - Level prefabs (`Prefabs/Level/`) are `Square` sprites with an unlit material, a `BoxCollider2D` and a NavMeshPlus `NavMeshModifier` (area Not Walkable).
-  - The builder scales the wall/fence/building/barrier blocks.
+  - The builder scales the wall/fence/building/barrier blocks. They are variants of `Wall Block`, whose `ShadowCaster2D` must keep **Trim Edge 0**. The trim is in local space, so the scale multiplies it: 0.05 on a 10-long wall left a 0.5 gap at each end, and light leaked through the seams between blocks.
   - Props occupy their `PropKinds.Size` footprint in the layout, and the builder only rotates them. The visible body may be smaller than the footprint (car 1.6×3.4 in a 2×4 stall, trash can 0.6×0.6).
   - The tree casts its shadow from its 0.75 collider (shape-provider source, no self-shadow).
   - Tall things (blocks, cars, trees) use sorting layer **Wall**. Low obstacles (benches, trash cans) use **Floor**, so bullets, zombies and the player draw over them. Sorting layer order: Default (ground tilemap) < Floor < Player < Wall.
