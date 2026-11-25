@@ -15,6 +15,10 @@ namespace Flicker.Generation
 
         public RectInt InnerArea;
         public RectInt CarSpot;
+        // The player's car: a 4x2 footprint in the barrier gap under the car spot (barrier row + top road row).
+        public RectInt ExitCar;
+        // Fuel canister cells, filled by CanisterPlacer after validation.
+        public readonly List<Vector2Int> Canisters = new List<Vector2Int>();
         public readonly List<Lot> Lots = new List<Lot>();
         public readonly List<House> Houses = new List<House>();
         // Walking distance from the car spot center; -1 where not walkable. Filled by the validator.

@@ -19,6 +19,8 @@ public class PlayerInputReader : MonoBehaviour
     public event Action UnequipPressed;
     // Debug: generate a new block with a random seed.
     public event Action RegeneratePressed;
+    // Use the thing in reach (the exit car).
+    public event Action InteractPressed;
     /// <summary>+1 for next weapon, -1 for previous.</summary>
     public event Action<int> SwitchWeapon;
 
@@ -31,6 +33,7 @@ public class PlayerInputReader : MonoBehaviour
         gameplay.Slot2.performed += _ => Slot2Pressed?.Invoke();
         gameplay.Unequip.performed += _ => UnequipPressed?.Invoke();
         gameplay.Regenerate.performed += _ => RegeneratePressed?.Invoke();
+        gameplay.Interact.performed += _ => InteractPressed?.Invoke();
         gameplay.SwitchWeapon.performed += OnSwitchWeapon;
     }
 

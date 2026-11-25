@@ -23,6 +23,11 @@ namespace Flicker.Generation
 
             int carX = rng.Range(p, w - p - s.carSpotWidth + 1);
             layout.CarSpot = new RectInt(carX, sidewalkMin, s.carSpotWidth, s.sidewalkDepth);
+
+            // The car parks along the curb in a gap in the barrier, right under the car spot. Its cells are
+            // Road (not walkable, not blocking): the car itself plugs the gap, so the road stays sealed.
+            layout.ExitCar = new RectInt(carX, barrierRow - 1, s.carSpotWidth, 2);
+            layout.Fill(layout.ExitCar, CellType.Road);
         }
     }
 }

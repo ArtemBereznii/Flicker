@@ -14,6 +14,18 @@ public class VisibilityLight : MonoBehaviour
 
     public Vector2 Position => transform.position;
 
+    // The one reveal rule, shared by zombies and fuel canisters: some light covers the point
+    // and no wall (Wall-layer linecast) stands between them.
+    public static bool IsLit(Vector2 point, LayerMask walls)
+    {
+        foreach (VisibilityLight light in lights)
+        {
+            if (light.Covers(point) && !Physics2D.Linecast(point, light.Position, walls))
+                return true;
+        }
+        return false;
+    }
+
     void Awake() => light2D = GetComponent<Light2D>();
     void OnEnable() => lights.Add(this);
     void OnDisable() => lights.Remove(this);

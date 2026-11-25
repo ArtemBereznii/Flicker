@@ -19,6 +19,8 @@ public class PlayerHealth : MonoBehaviour
     public int CurrentHealth => currentHealth;
     public int MaxHealth => maxHealth;
     public bool IsDead { get; private set; }
+    // Ignores all damage while set (the level-transition cutscene sets it).
+    public bool Invulnerable { get; set; }
 
     public event Action OnHealthChanged;
     public event Action OnDied;
@@ -33,7 +35,7 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        if (IsDead || isInvincible) return;
+        if (IsDead || isInvincible || Invulnerable) return;
 
         currentHealth = Mathf.Max(currentHealth - damage, 0);
         OnHealthChanged?.Invoke();

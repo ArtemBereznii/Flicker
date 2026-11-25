@@ -26,20 +26,9 @@ public class ZombieVisibility : MonoBehaviour
         if (Time.time < nextCheckTime) return;
         nextCheckTime = Time.time + checkInterval;
 
-        bool lit = IsLit();
+        bool lit = VisibilityLight.IsLit(transform.position, wallLayer);
         if (lit != isVisible)
             SetVisibility(lit);
-    }
-
-    private bool IsLit()
-    {
-        Vector2 position = transform.position;
-        foreach (VisibilityLight light in VisibilityLight.All)
-        {
-            if (light.Covers(position) && !Physics2D.Linecast(position, light.Position, wallLayer))
-                return true;
-        }
-        return false;
     }
 
     private void SetVisibility(bool visible)

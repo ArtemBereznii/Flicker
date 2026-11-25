@@ -10,6 +10,10 @@ public class CameraController : MonoBehaviour
     private Camera cam;
     private PlayerInputReader input;
     private Vector3 targetPosition;
+    private Transform followOverride;
+
+    // Follow something other than the player (the car in a cutscene). Null goes back to the player.
+    public void Follow(Transform target) => followOverride = target;
 
     void Awake()
     {
@@ -19,6 +23,12 @@ public class CameraController : MonoBehaviour
 
     void Update()
     {
+        if (followOverride != null)
+        {
+            targetPosition = followOverride.position; // no cursor lead while the player isn't in control
+            return;
+        }
+
         // Cursor offset from the screen center, in world units. Measured relative to the camera
         // itself, so moving the camera doesn't move the offset (no feedback loop).
         Vector2 cursorScreen = input != null ? input.AimScreenPosition : (Vector2)cam.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));

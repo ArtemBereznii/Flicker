@@ -23,6 +23,10 @@ public class BlockBuilder : MonoBehaviour
     [Tooltip("One prefab per blocking cell type: Wall, Fence, Building, Barrier.")]
     [SerializeField] private BlockPrefab[] blockPrefabs;
     [SerializeField] private PropPrefab[] propPrefabs;
+    [Tooltip("The player's car, spawned in the barrier gap under the car spot. Needs an ExitCar component.")]
+    [SerializeField] private ExitCar exitCarPrefab;
+    [Tooltip("Spawned on every canister cell of the layout.")]
+    [SerializeField] private FuelCanister canisterPrefab;
     [Tooltip("One surface per NavMesh agent type (normal zombies, large zombies). All are rebaked per block.")]
     [SerializeField] private NavMeshSurface[] navMeshSurfaces;
     [SerializeField] private Rigidbody2D player;
@@ -37,6 +41,10 @@ public class BlockBuilder : MonoBehaviour
     [SerializeField] private int debugZombieMinDistance = 15;
 
     public BlockLayout Current { get; private set; }
+    // The exit car spawned for the current block (null before the first build).
+    public ExitCar ExitCar { get; private set; }
+    // Where the player starts and steps out of the car: the car spot center.
+    public Vector2 PlayerSpawn => Current != null ? (Vector2)CenterOf(Current.CarSpot) : (Vector2)transform.position;
     public event Action<BlockLayout> Generated;
 
     void Start()
@@ -47,11 +55,12 @@ public class BlockBuilder : MonoBehaviour
 
     public void GenerateRandom() => Generate(Rng.Derive(Environment.TickCount, 1));
 
-    public void Generate(int seed)
+    // revivePlayer: false keeps the player's health (the next level of a run); true is a fresh start.
+    public void Generate(int seed, bool revivePlayer = true)
     {
         if (!TryCreateLayout(seed, out var layout)) return;
         StopAllCoroutines();
-        StartCoroutine(Rebuild(layout));
+        StartCoroutine(Rebuild(layout, revivePlayer));
     }
 
     [ContextMenu("Generate (random seed)")]
@@ -98,14 +107,14 @@ public class BlockBuilder : MonoBehaviour
         }
     }
 
-    private IEnumerator Rebuild(BlockLayout layout)
+    private IEnumerator Rebuild(BlockLayout layout, bool revivePlayer)
     {
         ClearGenerated(immediate: false);
         yield return null; // let destroyed colliders and renderers go before the NavMesh bake collects sources
 
         BuildContent(layout);
         BakeNavMeshes();
-        PlacePlayer(layout);
+        PlacePlayer(layout, revivePlayer);
         SpawnDebugZombies(layout);
 
         Current = layout;
@@ -154,6 +163,13 @@ public class BlockBuilder : MonoBehaviour
             bool rotated = prop.Footprint.size != PropKinds.Size(prop.Kind);
             Instantiate(prefab, CenterOf(prop.Footprint), Quaternion.Euler(0f, 0f, rotated ? 90f : 0f), root);
         }
+
+        // The exit car is authored lying along +X (its 4-long side), so it needs no rotation.
+        ExitCar = exitCarPrefab != null ? Instantiate(exitCarPrefab, CenterOf(layout.ExitCar), Quaternion.identity, root) : null;
+
+        if (canisterPrefab != null)
+            foreach (var cell in layout.Canisters)
+                Instantiate(canisterPrefab, new Vector3(cell.x + 0.5f, cell.y + 0.5f, 0f), Quaternion.identity, root);
     }
 
     private void PaintGround(BlockLayout layout)
@@ -173,15 +189,15 @@ public class BlockBuilder : MonoBehaviour
         ground.SetTiles(positions.ToArray(), painted.ToArray());
     }
 
-    private void PlacePlayer(BlockLayout layout)
+    private void PlacePlayer(BlockLayout layout, bool revive)
     {
         if (player == null) return;
         Vector2 spot = CenterOf(layout.CarSpot);
         player.position = spot;
         player.transform.position = spot;
         player.linearVelocity = Vector2.zero;
-        // A new block is a fresh start, even if the zombies got you in the last one.
-        if (player.TryGetComponent(out PlayerHealth health)) health.Revive();
+        // A restart is a fresh start, even if the zombies got you in the last block.
+        if (revive && player.TryGetComponent(out PlayerHealth health)) health.Revive();
     }
 
     private void SpawnDebugZombies(BlockLayout layout)
@@ -250,6 +266,10 @@ public class BlockBuilder : MonoBehaviour
         }
         Gizmos.color = Color.cyan;
         DrawRect(Current.CarSpot, 0f);
+        DrawRect(Current.ExitCar, 0.1f);
+        Gizmos.color = new Color(1f, 0.5f, 0f, 1f);
+        foreach (var c in Current.Canisters)
+            Gizmos.DrawWireSphere(new Vector3(c.x + 0.5f, c.y + 0.5f, 0f), 0.6f);
     }
 
     private static void DrawRect(RectInt r, float inset) =>

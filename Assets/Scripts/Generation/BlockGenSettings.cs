@@ -48,6 +48,13 @@ namespace Flicker.Generation
         [Min(0)] public int parkBenchesPer100 = 3;
         [Min(0)] public int parkTrashPer100 = 2;
 
+        [Header("Fuel")]
+        [Min(0)] public int canisterCount = 3;
+        [Tooltip("Minimum walking distance (cells) from the car spot to a canister.")]
+        [Min(0)] public int canisterMinCarDistance = 35;
+        [Tooltip("Minimum walking distance (cells) between two canisters.")]
+        [Min(0)] public int canisterMinSpacing = 22;
+
         [Header("Retries")]
         [Min(1)] public int maxAttempts = 20;
 
@@ -61,6 +68,9 @@ namespace Flicker.Generation
             if (!Ordered(heightRange)) return $"heightRange {heightRange} must have x < y (y is exclusive)";
             if (roadRows < 0 || sidewalkDepth < 2 || perimeterThickness < 1 || carSpotWidth < 2)
                 return "roadRows ≥ 0, sidewalkDepth ≥ 2, perimeterThickness ≥ 1 and carSpotWidth ≥ 2 are required";
+            if (roadRows < 2) return "roadRows must be at least 2: the exit car sits in the top road row and drives along the one below";
+            if (carSpotWidth != 4) return "carSpotWidth must be 4: the exit car lies along the curb and is 4 cells long";
+            if (canisterCount < 0 || canisterMinCarDistance < 0 || canisterMinSpacing < 0) return "canister settings must not be negative";
             if (lotMinSize < 1 || lotMaxSize < lotMinSize) return $"need 1 ≤ lotMinSize ≤ lotMaxSize (got {lotMinSize}, {lotMaxSize})";
             if (widthRange.x < minWidth) return $"blocks must be at least {minWidth} wide for the perimeter and one lot";
             if (heightRange.x < frameRows + lotMinSize) return $"blocks must be at least {frameRows + lotMinSize} tall for the street frame and one lot";

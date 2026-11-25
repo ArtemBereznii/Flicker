@@ -58,5 +58,32 @@ namespace Flicker.Generation.Tests
             }
             Assert.Greater(xs.Count, 10, "car spot position should vary between seeds");
         }
+
+        [Test]
+        public void Frame_ExitCarFillsBarrierGapUnderCarSpot_ForManySeeds()
+        {
+            var s = TestSettings.Default();
+            int barrierRow = s.roadRows;
+            for (int seed = 0; seed < 200; seed++)
+            {
+                var l = TestSettings.Framed(seed);
+                var car = l.ExitCar;
+                Assert.AreEqual(new Vector2Int(4, 2), car.size, $"seed {seed}");
+                Assert.AreEqual(l.CarSpot.xMin, car.xMin, $"seed {seed}");
+                Assert.AreEqual(barrierRow - 1, car.yMin, $"seed {seed}");
+                Assert.AreEqual(barrierRow + 1, car.yMax, $"seed {seed}: car's long side touches the sidewalk");
+                foreach (var c in car.allPositionsWithin)
+                    Assert.AreEqual(CellType.Road, l[c], $"seed {seed} {c}");
+
+                // The barrier still closes the road on both sides of the gap (unless the gap reaches the perimeter).
+                var left = new Vector2Int(car.xMin - 1, barrierRow);
+                var right = new Vector2Int(car.xMax, barrierRow);
+                Assert.IsTrue(l[left] == CellType.Barrier || l[left] == CellType.Building, $"seed {seed}");
+                Assert.IsTrue(l[right] == CellType.Barrier || l[right] == CellType.Building, $"seed {seed}");
+                for (int x = 0; x < l.Width; x++)
+                    if (x < car.xMin || x >= car.xMax)
+                        Assert.IsTrue(l[x, barrierRow].IsBlocking(), $"seed {seed}: open barrier at {x}");
+            }
+        }
     }
 }

@@ -25,7 +25,7 @@ public class Menu : MonoBehaviour
 
     public void StartGame()
     {
-        SceneManager.LoadScene(SceneNames.Arena1);
+        SceneManager.LoadScene(SceneNames.Block);
     }
 
     public void OpenWeapons()

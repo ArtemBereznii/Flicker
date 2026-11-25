@@ -44,7 +44,7 @@ namespace Flicker.Generation
             foreach (var lot in layout.Lots)
                 LotFillers.Get(lot.Type).Fill(lot, layout, rng, s);
 
-            failure = LayoutValidator.Validate(layout);
+            failure = LayoutValidator.Validate(layout) ?? CanisterPlacer.Place(layout, rng, s);
             return failure == null;
         }
     }
